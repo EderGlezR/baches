@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Baches</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Baches</h1>
+    <p>Reporta un bache en tu vía pública</p>
+  </header>
+
+  <main>
+    <form id="report-form">
+      <label for="foto">Foto del bache</label>
+      <input type="file" id="foto" accept="image/*" capture="environment" required />
+
+      <label for="categoria">Categoría</label>
+      <select id="categoria" required>
+        <option value="" disabled selected>Selecciona una categoría</option>
+        <option value="leve">Leve</option>
+        <option value="moderado">Moderado</option>
+        <option value="severo">Severo</option>
+      </select>
+
+      <button type="button" id="ubicacion-btn">Usar mi ubicación</button>
+      <p id="ubicacion-estado">Ubicación no capturada todavía.</p>
+
+      <button type="submit" id="submit-btn">Enviar reporte</button>
+      <p id="form-mensaje" role="status"></p>
+    </form>
+
+    <section>
+      <h2>Reportes recientes</h2>
+      <div id="reportes-lista">Cargando reportes...</div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
