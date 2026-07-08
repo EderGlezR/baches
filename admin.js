@@ -85,6 +85,7 @@ async function cargarReportes() {
         <p><strong>${CATEGORIA_LABEL[reporte.categoria] ?? reporte.categoria}</strong></p>
         <p>${reporte.latitud.toFixed(5)}, ${reporte.longitud.toFixed(5)}</p>
         <p>${new Date(reporte.creado_en).toLocaleString("es-MX")}</p>
+        <p>Registrado por: ${reporte.persona_registra}</p>
         <p>Contacto: ${reporte.nombre_contacto || "—"} ${reporte.telefono_contacto ? `· ${reporte.telefono_contacto}` : ""}</p>
       </div>
     `;
