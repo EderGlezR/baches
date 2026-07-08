@@ -1,0 +1,70 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 640px;
+  padding: 1.5rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid #ccc8;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+button {
+  padding: 0.6rem 1rem;
+  border-radius: 0.4rem;
+  border: 1px solid #888;
+  cursor: pointer;
+  background: transparent;
+  color: inherit;
+}
+
+#submit-btn {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+  margin-top: 0.5rem;
+}
+
+#submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reporte-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #ccc8;
+}
+
+.reporte-card img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 0.4rem;
+}
+
+.reporte-card p {
+  margin: 0.15rem 0;
+}
