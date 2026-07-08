@@ -1,6 +1,7 @@
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 const form = document.getElementById("report-form");
+const personaRegistraInput = document.getElementById("persona_registra");
 const fotoInput = document.getElementById("foto");
 const categoriaInput = document.getElementById("categoria");
 const nombreContactoInput = document.getElementById("nombre_contacto");
@@ -79,11 +80,12 @@ form.addEventListener("submit", async (event) => {
   event.preventDefault();
   formMensaje.textContent = "";
 
+  const personaRegistra = personaRegistraInput.value.trim();
   const foto = fotoInput.files[0];
   const categoria = categoriaInput.value;
 
-  if (!foto || !categoria || !ubicacion) {
-    formMensaje.textContent = "Falta foto, categoría o ubicación.";
+  if (!personaRegistra || !foto || !categoria || !ubicacion) {
+    formMensaje.textContent = "Falta persona que registra, foto, categoría o ubicación.";
     return;
   }
 
@@ -102,6 +104,7 @@ form.addEventListener("submit", async (event) => {
       latitud: ubicacion.lat,
       longitud: ubicacion.lng,
       categoria,
+      persona_registra: personaRegistra,
       nombre_contacto: nombreContactoInput.value.trim() || null,
       telefono_contacto: telefonoContactoInput.value.trim() || null,
     });
