@@ -68,3 +68,48 @@ button {
 .reporte-card p {
   margin: 0.15rem 0;
 }
+
+#mapa {
+  height: 320px;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.leyenda {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.punto {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  margin-right: 0.3rem;
+}
+
+.punto-rojo { background: #dc2626; }
+.punto-naranja { background: #f59e0b; }
+.punto-verde { background: #16a34a; }
+
+footer {
+  text-align: center;
+  margin: 2rem 0 1rem;
+  font-size: 0.85rem;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.reporte-card select {
+  margin-left: auto;
+}

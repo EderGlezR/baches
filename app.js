@@ -3,6 +3,8 @@ const client = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const form = document.getElementById("report-form");
 const fotoInput = document.getElementById("foto");
 const categoriaInput = document.getElementById("categoria");
+const nombreContactoInput = document.getElementById("nombre_contacto");
+const telefonoContactoInput = document.getElementById("telefono_contacto");
 const ubicacionBtn = document.getElementById("ubicacion-btn");
 const ubicacionEstado = document.getElementById("ubicacion-estado");
 const submitBtn = document.getElementById("submit-btn");
@@ -18,6 +20,43 @@ const ESTATUS_LABEL = {
   en_reparacion: "En reparación",
   reparado: "Reparado",
 };
+const ESTATUS_COLOR = {
+  reportado: "#dc2626",
+  en_revision: "#f59e0b",
+  en_reparacion: "#f59e0b",
+  reparado: "#16a34a",
+};
+
+const CENTRO_DEFAULT = [25.6866, -100.3161];
+const mapa = L.map("mapa").setView(CENTRO_DEFAULT, 12);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "&copy; OpenStreetMap",
+}).addTo(mapa);
+let marcadores = [];
+
+function dibujarMapa(reportes) {
+  for (const marcador of marcadores) mapa.removeLayer(marcador);
+  marcadores = [];
+
+  for (const reporte of reportes) {
+    const marcador = L.circleMarker([reporte.latitud, reporte.longitud], {
+      radius: 8,
+      color: "#fff",
+      weight: 1,
+      fillColor: ESTATUS_COLOR[reporte.estatus] ?? "#666",
+      fillOpacity: 0.9,
+    })
+      .addTo(mapa)
+      .bindPopup(
+        `<strong>${CATEGORIA_LABEL[reporte.categoria] ?? reporte.categoria}</strong><br>${ESTATUS_LABEL[reporte.estatus] ?? reporte.estatus}`
+      );
+    marcadores.push(marcador);
+  }
+
+  if (reportes.length) {
+    mapa.fitBounds(marcadores.map((m) => m.getLatLng()), { maxZoom: 15, padding: [20, 20] });
+  }
+}
 
 ubicacionBtn.addEventListener("click", () => {
   if (!navigator.geolocation) {
@@ -63,6 +102,8 @@ form.addEventListener("submit", async (event) => {
       latitud: ubicacion.lat,
       longitud: ubicacion.lng,
       categoria,
+      nombre_contacto: nombreContactoInput.value.trim() || null,
+      telefono_contacto: telefonoContactoInput.value.trim() || null,
     });
     if (insertError) throw insertError;
 
@@ -80,7 +121,7 @@ form.addEventListener("submit", async (event) => {
 
 async function cargarReportes() {
   const { data, error } = await client
-    .from("reportes")
+    .from("reportes_publicos")
     .select("*")
     .order("creado_en", { ascending: false });
 
@@ -88,6 +129,8 @@ async function cargarReportes() {
     reportesLista.textContent = `No se pudieron cargar los reportes: ${error.message}`;
     return;
   }
+
+  dibujarMapa(data);
 
   if (!data.length) {
     reportesLista.textContent = "Todavía no hay reportes.";
