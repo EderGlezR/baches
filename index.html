@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Baches</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
   <header>
@@ -25,6 +26,12 @@
         <option value="severo">Severo</option>
       </select>
 
+      <label for="nombre_contacto">Nombre de contacto (opcional)</label>
+      <input type="text" id="nombre_contacto" />
+
+      <label for="telefono_contacto">Teléfono de contacto (opcional)</label>
+      <input type="tel" id="telefono_contacto" />
+
       <button type="button" id="ubicacion-btn">Usar mi ubicación</button>
       <p id="ubicacion-estado">Ubicación no capturada todavía.</p>
 
@@ -33,11 +40,26 @@
     </form>
 
     <section>
+      <h2>Mapa de reportes</h2>
+      <div id="mapa"></div>
+      <ul class="leyenda">
+        <li><span class="punto punto-rojo"></span> Reportado</li>
+        <li><span class="punto punto-naranja"></span> En revisión / en reparación</li>
+        <li><span class="punto punto-verde"></span> Reparado</li>
+      </ul>
+    </section>
+
+    <section>
       <h2>Reportes recientes</h2>
       <div id="reportes-lista">Cargando reportes...</div>
     </section>
   </main>
 
+  <footer>
+    <a href="admin.html">Panel de administración</a>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
