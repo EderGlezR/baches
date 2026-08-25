@@ -35,8 +35,12 @@
       <label for="telefono_contacto">Teléfono de contacto (opcional)</label>
       <input type="tel" id="telefono_contacto" />
 
-      <button type="button" id="ubicacion-btn">Usar mi ubicación</button>
+      <div class="ubicacion-opciones">
+        <button type="button" id="ubicacion-btn">Usar mi ubicación</button>
+        <button type="button" id="ubicacion-mapa-btn">Colocar ubicación en el mapa</button>
+      </div>
       <p id="ubicacion-estado">Ubicación no capturada todavía.</p>
+      <div id="mapa-seleccion" hidden></div>
 
       <button type="submit" id="submit-btn">Enviar reporte</button>
       <p id="form-mensaje" role="status"></p>

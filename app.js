@@ -7,6 +7,8 @@ const categoriaInput = document.getElementById("categoria");
 const nombreContactoInput = document.getElementById("nombre_contacto");
 const telefonoContactoInput = document.getElementById("telefono_contacto");
 const ubicacionBtn = document.getElementById("ubicacion-btn");
+const ubicacionMapaBtn = document.getElementById("ubicacion-mapa-btn");
+const mapaSeleccionDiv = document.getElementById("mapa-seleccion");
 const ubicacionEstado = document.getElementById("ubicacion-estado");
 const submitBtn = document.getElementById("submit-btn");
 const formMensaje = document.getElementById("form-mensaje");
@@ -60,6 +62,7 @@ function dibujarMapa(reportes) {
 }
 
 ubicacionBtn.addEventListener("click", () => {
+  ocultarMapaSeleccion();
   if (!navigator.geolocation) {
     ubicacionEstado.textContent = "Tu navegador no soporta geolocalización.";
     return;
@@ -74,6 +77,53 @@ ubicacionBtn.addEventListener("click", () => {
       ubicacionEstado.textContent = "No se pudo obtener la ubicación. Revisa los permisos del navegador.";
     }
   );
+});
+
+let mapaSeleccion = null;
+let marcadorSeleccion = null;
+
+function actualizarUbicacionSeleccion(lat, lng) {
+  ubicacion = { lat, lng };
+  ubicacionEstado.textContent = `Ubicación seleccionada: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+}
+
+function mostrarMapaSeleccion() {
+  mapaSeleccionDiv.hidden = false;
+
+  const centro = ubicacion ? [ubicacion.lat, ubicacion.lng] : CENTRO_DEFAULT;
+
+  if (!mapaSeleccion) {
+    mapaSeleccion = L.map(mapaSeleccionDiv).setView(centro, 14);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap",
+    }).addTo(mapaSeleccion);
+
+    marcadorSeleccion = L.marker(centro, { draggable: true }).addTo(mapaSeleccion);
+    marcadorSeleccion.on("dragend", () => {
+      const { lat, lng } = marcadorSeleccion.getLatLng();
+      actualizarUbicacionSeleccion(lat, lng);
+    });
+
+    mapaSeleccion.on("click", (e) => {
+      marcadorSeleccion.setLatLng(e.latlng);
+      actualizarUbicacionSeleccion(e.latlng.lat, e.latlng.lng);
+    });
+  } else {
+    mapaSeleccion.setView(centro, 14);
+    marcadorSeleccion.setLatLng(centro);
+  }
+
+  actualizarUbicacionSeleccion(centro[0], centro[1]);
+
+  setTimeout(() => mapaSeleccion.invalidateSize(), 0);
+}
+
+function ocultarMapaSeleccion() {
+  mapaSeleccionDiv.hidden = true;
+}
+
+ubicacionMapaBtn.addEventListener("click", () => {
+  mostrarMapaSeleccion();
 });
 
 form.addEventListener("submit", async (event) => {
@@ -114,6 +164,7 @@ form.addEventListener("submit", async (event) => {
     form.reset();
     ubicacion = null;
     ubicacionEstado.textContent = "Ubicación no capturada todavía.";
+    ocultarMapaSeleccion();
     cargarReportes();
   } catch (err) {
     formMensaje.textContent = `Error al enviar el reporte: ${err.message}`;
