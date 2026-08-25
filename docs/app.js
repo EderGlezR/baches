@@ -31,10 +31,56 @@ const ESTATUS_COLOR = {
 };
 
 const CENTRO_DEFAULT = [25.6866, -100.3161];
+
+// Tiles precargados de la zona metropolitana de Monterrey (ver scripts/download-tiles.js).
+// Fuera de este rango de zoom, o si el tile local no existe, se cae a OpenStreetMap en línea.
+const TILES_ZOOM_MIN_LOCAL = 11;
+const TILES_ZOOM_MAX_LOCAL = 16;
+const TILE_URL_LOCAL = "tiles/{z}/{x}/{y}.png";
+const TILE_URL_REMOTO = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+const TileLayerConRespaldo = L.TileLayer.extend({
+  createTile(coords, done) {
+    const tile = document.createElement("img");
+
+    tile.onload = () => done(null, tile);
+    tile.onerror = () => {
+      if (tile.dataset.respaldo) {
+        done(new Error("tile no disponible"), tile);
+        return;
+      }
+      tile.dataset.respaldo = "1";
+      tile.src = L.Util.template(TILE_URL_REMOTO, {
+        ...coords,
+        s: TileLayerConRespaldo.subdominios[Math.abs(coords.x + coords.y) % TileLayerConRespaldo.subdominios.length],
+      });
+    };
+
+    if (coords.z < TILES_ZOOM_MIN_LOCAL || coords.z > TILES_ZOOM_MAX_LOCAL) {
+      tile.dataset.respaldo = "1";
+      tile.src = L.Util.template(TILE_URL_REMOTO, {
+        ...coords,
+        s: TileLayerConRespaldo.subdominios[Math.abs(coords.x + coords.y) % TileLayerConRespaldo.subdominios.length],
+      });
+    } else {
+      tile.src = this.getTileUrl(coords);
+    }
+
+    return tile;
+  },
+});
+TileLayerConRespaldo.subdominios = ["a", "b", "c"];
+
+function crearCapaTiles() {
+  return new TileLayerConRespaldo(TILE_URL_LOCAL, {
+    attribution: "&copy; OpenStreetMap contributors &copy; MapTiler",
+    minZoom: 3,
+    maxZoom: 18,
+  });
+}
+
 const mapa = L.map("mapa").setView(CENTRO_DEFAULT, 12);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "&copy; OpenStreetMap",
-}).addTo(mapa);
+crearCapaTiles().addTo(mapa);
 let marcadores = [];
 
 function dibujarMapa(reportes) {
@@ -94,9 +140,7 @@ function mostrarMapaSeleccion() {
 
   if (!mapaSeleccion) {
     mapaSeleccion = L.map(mapaSeleccionDiv).setView(centro, 14);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap",
-    }).addTo(mapaSeleccion);
+    crearCapaTiles().addTo(mapaSeleccion);
 
     marcadorSeleccion = L.marker(centro, { draggable: true }).addTo(mapaSeleccion);
     marcadorSeleccion.on("dragend", () => {
@@ -126,6 +170,20 @@ ubicacionMapaBtn.addEventListener("click", () => {
   mostrarMapaSeleccion();
 });
 
+async function subirReporte(datosReporte, foto) {
+  const path = `${Date.now()}-${foto.name}`;
+  const { error: uploadError } = await client.storage.from("fotos").upload(path, foto);
+  if (uploadError) throw uploadError;
+
+  const { data: publicUrlData } = client.storage.from("fotos").getPublicUrl(path);
+
+  const { error: insertError } = await client.from("reportes").insert({
+    ...datosReporte,
+    foto_url: publicUrlData.publicUrl,
+  });
+  if (insertError) throw insertError;
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   formMensaje.textContent = "";
@@ -140,25 +198,31 @@ form.addEventListener("submit", async (event) => {
   }
 
   submitBtn.disabled = true;
+
+  const datosReporte = {
+    latitud: ubicacion.lat,
+    longitud: ubicacion.lng,
+    categoria,
+    persona_registra: personaRegistra,
+    nombre_contacto: nombreContactoInput.value.trim() || null,
+    telefono_contacto: telefonoContactoInput.value.trim() || null,
+  };
+
+  if (!navigator.onLine) {
+    await OfflineBaches.guardarPendiente({ datosReporte, foto });
+    formMensaje.textContent = "Sin conexión: reporte guardado en el dispositivo. Se enviará cuando haya internet.";
+    form.reset();
+    ubicacion = null;
+    ubicacionEstado.textContent = "Ubicación no capturada todavía.";
+    ocultarMapaSeleccion();
+    submitBtn.disabled = false;
+    return;
+  }
+
   formMensaje.textContent = "Enviando reporte...";
 
   try {
-    const path = `${Date.now()}-${foto.name}`;
-    const { error: uploadError } = await client.storage.from("fotos").upload(path, foto);
-    if (uploadError) throw uploadError;
-
-    const { data: publicUrlData } = client.storage.from("fotos").getPublicUrl(path);
-
-    const { error: insertError } = await client.from("reportes").insert({
-      foto_url: publicUrlData.publicUrl,
-      latitud: ubicacion.lat,
-      longitud: ubicacion.lng,
-      categoria,
-      persona_registra: personaRegistra,
-      nombre_contacto: nombreContactoInput.value.trim() || null,
-      telefono_contacto: telefonoContactoInput.value.trim() || null,
-    });
-    if (insertError) throw insertError;
+    await subirReporte(datosReporte, foto);
 
     formMensaje.textContent = "¡Reporte enviado! Gracias por ayudar a tu comunidad.";
     form.reset();
@@ -167,31 +231,48 @@ form.addEventListener("submit", async (event) => {
     ocultarMapaSeleccion();
     cargarReportes();
   } catch (err) {
-    formMensaje.textContent = `Error al enviar el reporte: ${err.message}`;
+    await OfflineBaches.guardarPendiente({ datosReporte, foto });
+    formMensaje.textContent = "No se pudo enviar por la red: se guardó en el dispositivo y se reintentará automáticamente.";
+    form.reset();
+    ubicacion = null;
+    ubicacionEstado.textContent = "Ubicación no capturada todavía.";
+    ocultarMapaSeleccion();
   } finally {
     submitBtn.disabled = false;
   }
 });
 
-async function cargarReportes() {
-  const { data, error } = await client
-    .from("reportes_publicos")
-    .select("*")
-    .order("creado_en", { ascending: false });
-
-  if (error) {
-    reportesLista.textContent = `No se pudieron cargar los reportes: ${error.message}`;
-    return;
+async function sincronizarPendientes() {
+  const pendientes = await OfflineBaches.listarPendientes();
+  for (const pendiente of pendientes) {
+    try {
+      await subirReporte(pendiente.datosReporte, pendiente.foto);
+      await OfflineBaches.eliminarPendiente(pendiente.id);
+    } catch {
+      break;
+    }
   }
+  if (pendientes.length) cargarReportes();
+}
 
+OfflineBaches.alRecuperarConexion(sincronizarPendientes);
+
+function pintarReportes(data, { sinConexion = false } = {}) {
   dibujarMapa(data);
 
   if (!data.length) {
-    reportesLista.textContent = "Todavía no hay reportes.";
+    reportesLista.textContent = sinConexion
+      ? "Sin conexión y sin reportes guardados todavía."
+      : "Todavía no hay reportes.";
     return;
   }
 
   reportesLista.innerHTML = "";
+  if (sinConexion) {
+    const aviso = document.createElement("p");
+    aviso.textContent = "Sin conexión: mostrando la última copia guardada en el dispositivo.";
+    reportesLista.appendChild(aviso);
+  }
   for (const reporte of data) {
     const card = document.createElement("article");
     card.className = "reporte-card";
@@ -207,4 +288,21 @@ async function cargarReportes() {
   }
 }
 
+async function cargarReportes() {
+  const { data, error } = await client
+    .from("reportes_publicos")
+    .select("*")
+    .order("creado_en", { ascending: false });
+
+  if (error) {
+    const cache = await OfflineBaches.obtenerCache();
+    pintarReportes(cache, { sinConexion: true });
+    return;
+  }
+
+  await OfflineBaches.guardarCache(data);
+  pintarReportes(data);
+}
+
 cargarReportes();
+sincronizarPendientes();
