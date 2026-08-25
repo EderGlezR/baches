@@ -1,0 +1,8 @@
+{
+  "appId": "com.ederglezr.baches",
+  "appName": "Baches",
+  "webDir": "docs",
+  "android": {
+    "allowMixedContent": true
+  }
+}

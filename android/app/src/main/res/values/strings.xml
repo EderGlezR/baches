@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Baches</string>
+    <string name="title_activity_main">Baches</string>
+    <string name="package_name">com.ederglezr.baches</string>
+    <string name="custom_url_scheme">com.ederglezr.baches</string>
+</resources>
