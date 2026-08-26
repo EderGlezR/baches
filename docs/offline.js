@@ -92,3 +92,11 @@ window.OfflineBaches = {
   obtenerCache,
   alRecuperarConexion,
 };
+
+if ("serviceWorker" in navigator && !window.Capacitor) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.error("No se pudo registrar el service worker:", err);
+    });
+  });
+}
