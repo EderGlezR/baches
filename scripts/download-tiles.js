@@ -116,6 +116,24 @@ async function main() {
   await Promise.all(Array.from({ length: CONCURRENCIA }, trabajador));
 
   console.log(`Listo. ${completados - fallidos} tiles guardados, ${fallidos} con error.`);
+
+  await regenerarManifestTiles();
+}
+
+// Lista que usa docs/sw.js (la PWA) para precachear todos los tiles offline.
+async function regenerarManifestTiles() {
+  const rutas = [];
+  async function recorrer(dir, base) {
+    for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      const rel = base ? `${base}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) await recorrer(full, rel);
+      else rutas.push(`tiles/${rel}`);
+    }
+  }
+  await recorrer(OUT_DIR, "");
+  await fs.writeFile(path.join(OUT_DIR, "..", "tiles-manifest.json"), JSON.stringify(rutas));
+  console.log(`Manifest de tiles regenerado: ${rutas.length} rutas.`);
 }
 
 main();

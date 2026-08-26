@@ -37,6 +37,20 @@ instálalo en un Android (requiere permitir "orígenes desconocidos" al instalar
 > El APK es un build debug sin firmar, pensado para instalar y probar directamente. Firmar un release para
 > publicarlo en Play Store es un paso aparte, no cubierto todavía.
 
+## App de escritorio (Windows y otros) como PWA
+
+`docs/` es también una Progressive Web App: incluye un service worker (`docs/sw.js`) que precarga
+el shell de la app y todos los tiles de Monterrey la primera vez que se visita con internet, para
+que funcione completamente offline después (igual que el APK). Los reportes creados sin conexión
+usan el mismo outbox de IndexedDB y se sincronizan solos al reconectar.
+
+Para instalarla en una PC con Windows: abre `https://ederglezr.github.io/baches/index.html` en Edge
+o Chrome y usa la opción "Instalar" (ícono en la barra de direcciones, o menú ⋮ → "Instalar Baches").
+Queda como una app independiente en el menú de inicio, sin necesidad de compilar nada.
+
+> `download-tiles.js` regenera automáticamente `docs/tiles-manifest.json` (la lista que usa el
+> service worker para precachear todos los tiles), así que basta con volver a correrlo.
+
 ### 3. Desarrollo local del proyecto Android (opcional)
 
 Si tienes Android Studio/SDK instalados:
