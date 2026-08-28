@@ -6,6 +6,9 @@ const fotoInput = document.getElementById("foto");
 const categoriaInput = document.getElementById("categoria");
 const nombreContactoInput = document.getElementById("nombre_contacto");
 const telefonoContactoInput = document.getElementById("telefono_contacto");
+const calleInput = document.getElementById("calle");
+const numeroInput = document.getElementById("numero");
+const coloniaInput = document.getElementById("colonia");
 const ubicacionBtn = document.getElementById("ubicacion-btn");
 const ubicacionMapaBtn = document.getElementById("ubicacion-mapa-btn");
 const mapaSeleccionDiv = document.getElementById("mapa-seleccion");
@@ -29,6 +32,11 @@ const ESTATUS_COLOR = {
   en_reparacion: "#f59e0b",
   reparado: "#16a34a",
 };
+
+function formatearDireccion(reporte) {
+  const calleNumero = [reporte.calle, reporte.numero].filter(Boolean).join(" ");
+  return [calleNumero, reporte.colonia].filter(Boolean).join(", ");
+}
 
 const CENTRO_DEFAULT = [25.6866, -100.3161];
 
@@ -206,6 +214,9 @@ form.addEventListener("submit", async (event) => {
     persona_registra: personaRegistra,
     nombre_contacto: nombreContactoInput.value.trim() || null,
     telefono_contacto: telefonoContactoInput.value.trim() || null,
+    calle: calleInput.value.trim() || null,
+    numero: numeroInput.value.trim() || null,
+    colonia: coloniaInput.value.trim() || null,
   };
 
   if (!navigator.onLine) {
@@ -275,11 +286,13 @@ function pintarReportes(data, { sinConexion = false } = {}) {
   }
   for (const reporte of data) {
     const card = document.createElement("article");
+    const direccion = formatearDireccion(reporte);
     card.className = "reporte-card";
     card.innerHTML = `
       <img src="${reporte.foto_url}" alt="Foto del bache" loading="lazy" />
       <div>
         <p><strong>${CATEGORIA_LABEL[reporte.categoria] ?? reporte.categoria}</strong> · ${ESTATUS_LABEL[reporte.estatus] ?? reporte.estatus}</p>
+        ${direccion ? `<p>${direccion}</p>` : ""}
         <p>${reporte.latitud.toFixed(5)}, ${reporte.longitud.toFixed(5)}</p>
         <p>${new Date(reporte.creado_en).toLocaleString("es-MX")}</p>
       </div>

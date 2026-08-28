@@ -17,6 +17,11 @@ const ESTATUS_LABEL = {
   reparado: "Reparado",
 };
 
+function formatearDireccion(reporte) {
+  const calleNumero = [reporte.calle, reporte.numero].filter(Boolean).join(" ");
+  return [calleNumero, reporte.colonia].filter(Boolean).join(", ");
+}
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   loginMensaje.textContent = "Entrando...";
@@ -79,10 +84,12 @@ async function cargarReportes() {
     }
     select.addEventListener("change", () => actualizarEstatus(reporte.id, select));
 
+    const direccion = formatearDireccion(reporte);
     card.innerHTML = `
       <img src="${reporte.foto_url}" alt="Foto del bache" loading="lazy" />
       <div>
         <p><strong>${CATEGORIA_LABEL[reporte.categoria] ?? reporte.categoria}</strong></p>
+        ${direccion ? `<p>${direccion}</p>` : ""}
         <p>${reporte.latitud.toFixed(5)}, ${reporte.longitud.toFixed(5)}</p>
         <p>${new Date(reporte.creado_en).toLocaleString("es-MX")}</p>
         <p>Registrado por: ${reporte.persona_registra}</p>
