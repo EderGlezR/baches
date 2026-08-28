@@ -1,6 +1,6 @@
 // Se bumpean por separado: SHELL_VERSION cambia con cada rediseño/actualización de código,
 // TILES_VERSION solo cuando cambian los tiles (para no forzar re-descargar 165MB sin necesidad).
-const SHELL_VERSION = "baches-shell-v2";
+const SHELL_VERSION = "baches-shell-v3";
 const TILES_VERSION = "baches-v1-tiles"; // sin cambios: no forzar re-descarga de 165MB de tiles
 const CACHE_SHELL = SHELL_VERSION;
 const CACHE_TILES = TILES_VERSION;
