@@ -133,6 +133,16 @@ ubicacionBtn.addEventListener("click", () => {
   );
 });
 
+const PIN_ROJO = L.divIcon({
+  className: "pin-seleccion",
+  html: `<svg width="30" height="42" viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg">
+      <path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 27 15 27s15-16.5 15-27c0-8.3-6.7-15-15-15z" fill="#c0392b" stroke="#fff" stroke-width="1.5"/>
+      <circle cx="15" cy="15" r="5.5" fill="#fff"/>
+    </svg>`,
+  iconSize: [30, 42],
+  iconAnchor: [15, 42],
+});
+
 let mapaSeleccion = null;
 let marcadorSeleccion = null;
 
@@ -150,7 +160,7 @@ function mostrarMapaSeleccion() {
     mapaSeleccion = L.map(mapaSeleccionDiv).setView(centro, 14);
     crearCapaTiles().addTo(mapaSeleccion);
 
-    marcadorSeleccion = L.marker(centro, { draggable: true }).addTo(mapaSeleccion);
+    marcadorSeleccion = L.marker(centro, { draggable: true, icon: PIN_ROJO }).addTo(mapaSeleccion);
     marcadorSeleccion.on("dragend", () => {
       const { lat, lng } = marcadorSeleccion.getLatLng();
       actualizarUbicacionSeleccion(lat, lng);
