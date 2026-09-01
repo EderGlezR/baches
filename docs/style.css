@@ -160,6 +160,11 @@ button:hover {
   border: 1px solid var(--border);
 }
 
+.pin-seleccion {
+  background: transparent;
+  border: none;
+}
+
 .leyenda {
   display: flex;
   gap: 1rem;
